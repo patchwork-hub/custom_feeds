@@ -1,4 +1,4 @@
-module CustomFeeds
+module CustomFeeds::Api::V1::Timelines
   class FeedsController < Api::V1::Timelines::BaseController
     before_action -> { authorize_if_got_token! :read, :'read:statuses' }
 
