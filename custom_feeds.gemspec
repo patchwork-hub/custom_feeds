@@ -16,7 +16,7 @@ Gem::Specification.new do |spec|
 
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = "https://github.com/patchwork-hub/custom_feeds"
-  spec.metadata["changelog_uri"] = "TGenerate custom timelines."
+  spec.metadata["changelog_uri"] = "#{spec.homepage}/CHANGELOG.md"
 
   spec.files = Dir.chdir(File.expand_path(__dir__)) do
     Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
