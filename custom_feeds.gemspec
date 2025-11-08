@@ -5,7 +5,7 @@ Gem::Specification.new do |spec|
   spec.version     = CustomFeeds::VERSION
   spec.authors     = [ "Aung Kyaw Phyo" ]
   spec.email       = [ "kiru.kiru28@gmail.com" ]
-  spec.homepage    = "Generate custom timelines."
+  spec.homepage = "https://www.joinpatchwork.org/"
   spec.summary     = "Generate custom timelines."
   spec.description = "Generate custom timelines."
   spec.license     = "MIT"
@@ -16,7 +16,7 @@ Gem::Specification.new do |spec|
 
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = "https://github.com/patchwork-hub/custom_feeds"
-  spec.metadata["changelog_uri"] = "TODO: Put your gem's CHANGELOG.md URL here."
+  spec.metadata["changelog_uri"] = "TGenerate custom timelines."
 
   spec.files = Dir.chdir(File.expand_path(__dir__)) do
     Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
