@@ -18,7 +18,6 @@ module CustomFeeds::Api::V1::CustomStatuses
         end
         render json: statuses
       else
-        CustomFeeds::CustomTimelineService.new.add_custom_public_status(1234567896)
         render json: { error: "No status found" }, status: :not_found
       end
     end
@@ -27,8 +26,9 @@ module CustomFeeds::Api::V1::CustomStatuses
       status_id = params[:status_id]
       return render json: { error: "Status ID is required" }, status: :bad_request unless status_id.present?
 
-      # status = Status.find(status_id)
-      # return render json: { error: "Status not found" }, status: :not_found unless status.present?
+      status = Status.find(status_id)
+      return render json: { error: "Status not found" }, status: :not_found unless status.present?
+
       CustomFeeds::CustomTimelineService.new.remove_custom_public_status(status_id)
       render json: { message: "Status removed from custom boost bot timeline" } 
     end
