@@ -10,13 +10,11 @@ module CustomFeeds::Api::V1::CustomStatuses
       @status_url = params[:status_url]
       return render json: { error: "Status URL is required" }, status: :bad_request unless @status_url.present?
 
-      statuses = search_results
+      @search = Search.new(search_results)
       
-      if statuses[:statuses].present?
-        statuses[:statuses].each do |status|
-          CustomFeeds::CustomTimelineService.new.add_custom_public_status(status.id)
-        end
-        render json: statuses
+      if @search.statuses.any?
+        CustomFeeds::CustomTimelineService.new.add_custom_public_status(@search.statuses.first.id)
+        render json: @search, serializer: REST::SearchSerializer
       else
         render json: { error: "No status found" }, status: :not_found
       end
@@ -37,35 +35,23 @@ module CustomFeeds::Api::V1::CustomStatuses
 
     def search_results
       SearchService.new.call(
-        @status_url,
+        params[:status_url],
         current_account,
         limit_param(RESULTS_LIMIT),
         combined_search_params
       )
     end
-
+  
     def combined_search_params
       search_params.merge(
-        resolve: truthy_param?(:resolve),
+        resolve: true,
         exclude_unreviewed: truthy_param?(:exclude_unreviewed),
-        following: truthy_param?(:following),
-        query_fasp: @query_fasp
+        following: truthy_param?(:following)
       )
     end
   
     def search_params
-      params.permit(
-        :type,
-        :offset,
-        :min_id,
-        :max_id,
-        :account_id,
-        :following,
-        :status_url,
-        :format,
-        :client_id,
-        :client_secret
-      )
+      params.permit(:type, :offset, :min_id, :max_id, :account_id, :following)
     end
 
     def require_auth!
