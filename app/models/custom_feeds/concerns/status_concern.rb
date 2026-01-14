@@ -4,8 +4,10 @@ module CustomFeeds::Concerns::StatusConcern
   extend ActiveSupport::Concern
 
   included do
-    after_create :add_status_to_mix_channel_local_timeline
-    after_destroy :remove_status_from_mix_channel_local_timeline
+    if ENV['FOR_YOU_TIMELINE_ENABLED']&.casecmp?('true')
+      after_create :add_status_to_mix_channel_local_timeline
+      after_destroy :remove_status_from_mix_channel_local_timeline
+    end
   end
 
   private
