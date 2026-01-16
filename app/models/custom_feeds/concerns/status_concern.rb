@@ -15,13 +15,13 @@ module CustomFeeds::Concerns::StatusConcern
   end
 
   def add_status_to_mix_channel_local_timeline
-    if self.local?
+    if self.local? && self.public_visibility?
       CustomFeeds::CustomTimelineService.new.add_custom_public_status(self.id)
     end
   end
 
   def remove_status_from_mix_channel_local_timeline
-    if self.local?
+    if self.local? && self.public_visibility?
       CustomFeeds::CustomTimelineService.new.remove_custom_public_status(self.id)
     end
   end
