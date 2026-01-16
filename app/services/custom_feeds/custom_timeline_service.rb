@@ -17,6 +17,7 @@ module CustomFeeds
 
     # from public status, add to mix_channel_local_timeline
     def add_custom_public_status(status_id)
+      Rails.logger.info ">>>> staging test fun add_custom_public_status : #{status_id}"
       return unless status_id
 
       push_to_mix_channel_local_timeline(status_id)
@@ -25,6 +26,7 @@ module CustomFeeds
 
     # from public status, remove from mix_channel_local_timeline
     def remove_custom_public_status(status_id)
+      Rails.logger.info ">>>> staging test fun remove_custom_public_status : #{status_id}"
       return unless status_id
 
       unpush_from_mix_channel_local_timeline(status_id)
@@ -32,12 +34,20 @@ module CustomFeeds
 
     # Add a status to mix_channel_local_timeline
     def push_to_mix_channel_local_timeline(status_id)
+      Rails.logger.info ">>>> staging test fun push_to_mix_channel_local_timeline : #{status_id}"
       redis.zadd(timeline_key, status_id, status_id)
+      Rails.logger.info ">>>> staging test after adding redis mix_channel_local_timeline log"
+      Rails.logger.info redis.zrange("feed:mix_channel_local_timeline", 0, -1)
+      Rails.logger.info '>>>> staging test End redis adding(mix_channel_local_timeline)'
     end
 
     # Remove a status from mix_channel_local_timeline
     def unpush_from_mix_channel_local_timeline(status_id)
+      Rails.logger.info ">>>> staging test fun unpush_from_mix_channel_local_timeline : #{status_id}"
       redis.zrem(timeline_key, status_id)
+      Rails.logger.info ">>>> staging test after removing redis mix_channel_local_timeline log"
+      Rails.logger.info redis.zrange("feed:mix_channel_local_timeline", 0, -1)
+      Rails.logger.info '>>>> staging test End redis removing(mix_channel_local_timeline)'
     end
   end
 end

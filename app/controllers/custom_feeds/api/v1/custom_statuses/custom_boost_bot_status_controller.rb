@@ -5,14 +5,16 @@ module CustomFeeds::Api::V1::CustomStatuses
     before_action :require_auth!
 
     RESULTS_LIMIT = 20
-    
+
     def add_custom_boost_bot_status
+      Rails.logger.info ">>>> staging test Coming from channel reblog status : add_custom_boost_bot_status"
       @status_url = params[:status_url]
       return render json: { error: "Status URL is required" }, status: :bad_request unless @status_url.present?
 
       @search = Search.new(search_results)
-      
+
       if @search.statuses.any?
+        Rails.logger.info ">>>> staging test coming from channel reblog status : #{@search.statuses.first.id}"
         CustomFeeds::CustomTimelineService.new.add_custom_public_status(@search.statuses.first.id)
         render json: @search, serializer: REST::SearchSerializer
       else
@@ -28,7 +30,7 @@ module CustomFeeds::Api::V1::CustomStatuses
       return render json: { error: "Status not found" }, status: :not_found unless status.present?
 
       CustomFeeds::CustomTimelineService.new.remove_custom_public_status(status_id)
-      render json: { message: "Status removed from custom boost bot timeline" } 
+      render json: { message: "Status removed from custom boost bot timeline" }
     end
 
     private
@@ -41,7 +43,7 @@ module CustomFeeds::Api::V1::CustomStatuses
         combined_search_params
       )
     end
-  
+
     def combined_search_params
       search_params.merge(
         resolve: true,
@@ -49,7 +51,7 @@ module CustomFeeds::Api::V1::CustomStatuses
         following: truthy_param?(:following)
       )
     end
-  
+
     def search_params
       params.permit(:type, :offset, :min_id, :max_id, :account_id, :following)
     end
