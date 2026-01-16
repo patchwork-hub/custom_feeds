@@ -7,14 +7,12 @@ module CustomFeeds::Api::V1::CustomStatuses
     RESULTS_LIMIT = 20
 
     def add_custom_boost_bot_status
-      Rails.logger.info ">>>> staging test Coming from channel reblog status : add_custom_boost_bot_status"
       @status_url = params[:status_url]
       return render json: { error: "Status URL is required" }, status: :bad_request unless @status_url.present?
 
       @search = Search.new(search_results)
 
       if @search.statuses.any?
-        Rails.logger.info ">>>> staging test coming from channel reblog status : #{@search.statuses.first.id}"
         CustomFeeds::CustomTimelineService.new.add_custom_public_status(@search.statuses.first.id)
         render json: @search, serializer: REST::SearchSerializer
       else
