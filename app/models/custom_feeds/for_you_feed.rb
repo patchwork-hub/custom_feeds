@@ -9,7 +9,7 @@ class CustomFeeds::ForYouFeed
   # @option [Boolean] :local
   # @option [Boolean] :remote
   # @option [Boolean] :only_media
-  
+  # @option [Boolean] :grouped_admin_statuses
   def initialize(account, options = {})
     @account = account
     @options = options
@@ -29,6 +29,7 @@ class CustomFeeds::ForYouFeed
     scope.merge!(remote_only_scope) if remote_only?
     scope.merge!(account_filters_scope) if account?
     scope.merge!(media_only_scope) if media_only?
+    scope.merge!(grouped_admin_statuses_scope) if grouped_admin_statuses?
     scope.merge!(language_scope) if account&.chosen_languages.present?
 
     scope.to_a_paginated_by_id(limit, max_id: max_id, since_id: since_id, min_id: min_id)
@@ -96,6 +97,29 @@ class CustomFeeds::ForYouFeed
   def account_filters_scope
     Status.not_excluded_by_account(account).tap do |scope|
       scope.merge!(Status.not_domain_blocked_by_account(account)) unless local_only?
+    end
+  end
+
+  def grouped_admin_statuses?
+    options[:grouped_admin_statuses]
+  end
+
+  def grouped_admin_statuses_scope
+    grouped_admin_account_ids = fetch_grouped_admin_account_ids
+    Status.where.not(account_id: grouped_admin_account_ids) if grouped_admin_account_ids.any?
+  end
+
+  def fetch_grouped_admin_account_ids
+    Rails.cache.fetch("grouped_admin_account_ids", expires_in: 1.hour) do
+      ContentFilters::CommunityAdmin
+        .includes(:community)
+        .where(
+          is_boost_bot: true,
+          account_status: ContentFilters::CommunityAdmin.account_statuses[:active],
+          community: { channel_type: ContentFilters::Community.channel_types[:channel_feed] }
+        )
+        .pluck(:account_id)
+        .uniq
     end
   end
 end
