@@ -107,12 +107,12 @@ class CustomFeeds::ForYouFeed
 
   def grouped_admin_statuses_scope
     grouped_admin_account_ids = fetch_grouped_admin_account_ids
-    Status.where.not(account_id: grouped_admin_account_ids, local_only: true, local: true)
+    Status.where.not(account_id: grouped_admin_account_ids)
   end
 
   def grouped_admin_reblogged_statuses_scope
     grouped_admin_account_ids = fetch_grouped_admin_account_ids
-    grouped_admin_reblogged_ids = Status.where(account_id: grouped_admin_account_ids, local_only: true, local: true).pluck(:reblog_of_id).compact
+    grouped_admin_reblogged_ids = Status.where(account_id: grouped_admin_account_ids).pluck(:reblog_of_id).compact
     Status.where.not(id: grouped_admin_reblogged_ids)
   end
 
