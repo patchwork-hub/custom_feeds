@@ -36,7 +36,7 @@ module CustomFeeds::Api::V1::Timelines
         local: truthy_param?(:local),
         remote: truthy_param?(:remote),
         only_media: truthy_param?(:only_media),
-        grouped_admin_statuses: truthy_param?(:grouped_admin_statuses)
+        # grouped_admin_statuses: truthy_param?(:grouped_admin_statuses)
       )
     end
 
