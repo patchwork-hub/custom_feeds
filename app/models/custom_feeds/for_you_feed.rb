@@ -29,8 +29,8 @@ class CustomFeeds::ForYouFeed
     scope.merge!(remote_only_scope) if remote_only?
     scope.merge!(account_filters_scope) if account?
     scope.merge!(media_only_scope) if media_only?
-    scope.merge!(grouped_admin_statuses_scope) if grouped_admin_statuses?
-    scope.merge!(grouped_admin_reblogged_statuses_scope) if grouped_admin_statuses?
+    # scope.merge!(grouped_admin_statuses_scope) if grouped_admin_statuses?
+    # scope.merge!(grouped_admin_reblogged_statuses_scope) if grouped_admin_statuses?
     scope.merge!(language_scope) if account&.chosen_languages.present?
 
     scope.to_a_paginated_by_id(limit, max_id: max_id, since_id: since_id, min_id: min_id)
