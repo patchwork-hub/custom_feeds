@@ -24,7 +24,7 @@ class CustomFeeds::ForYouFeed
   def get(limit, max_id = nil, since_id = nil, min_id = nil)
     scope = custom_scope
 
-    scope.merge!(without_unfollowed_accounts_scope)
+    # scope.merge!(without_unfollowed_accounts_scope)
     scope.merge!(without_replies_scope) if exclude_replies?
     scope.merge!(without_reblogs_scope) unless with_reblogs?
     scope.merge!(local_only_scope) if local_only?
@@ -112,10 +112,10 @@ class CustomFeeds::ForYouFeed
     Status.where(visibility: %i(public unlisted))
   end
 
-  def without_unfollowed_accounts_scope
-    followed_account_ids = Follow.where(account_id: account.id).pluck(:target_account_id)
-    Status.where(account_id: followed_account_ids).merge(Status.local) # Prioritize local statuses from followed accounts
-  end
+  # def without_unfollowed_accounts_scope
+  #   followed_account_ids = Follow.where(account_id: account.id).pluck(:target_account_id)
+  #   Status.where(account_id: followed_account_ids).merge(Status.local) # Prioritize local statuses from followed accounts
+  # end
 
   def grouped_admin_statuses?
     options[:grouped_admin_statuses] && Status.column_names.include?('local_only')
