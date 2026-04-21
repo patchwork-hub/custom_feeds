@@ -24,7 +24,6 @@ class CustomFeeds::ForYouFeed
   def get(limit, max_id = nil, since_id = nil, min_id = nil)
     scope = custom_scope
 
-    # scope.merge!(without_unfollowed_accounts_scope)
     scope.merge!(without_replies_scope) if exclude_replies?
     scope.merge!(without_reblogs_scope) unless with_reblogs?
     scope.merge!(local_only_scope) if local_only?
@@ -75,47 +74,42 @@ class CustomFeeds::ForYouFeed
     home_status_ids = redis.zrange(FeedManager.instance.key(:home, @account.id), 0, -1)
     mix_status_ids = redis.zrange("feed:mix_channel_local_timeline", 0, -1)
     merged_status_ids = home_status_ids + mix_status_ids
-    Status.where(id: merged_status_ids).joins(:account).merge(Account.without_suspended.without_silenced)
+    @status = Status.where(id: merged_status_ids).joins(:account).merge(Account.without_suspended.without_silenced)
   end
 
   def local_only_scope
-    Status.local
+    @status = Status.local
   end
 
   def remote_only_scope
-    Status.remote
+    @status = Status.remote
   end
 
   def without_replies_scope
-    Status.without_replies
+    @status = Status.without_replies
   end
 
   def without_reblogs_scope
-    Status.without_reblogs
+    @status = Status.without_reblogs
   end
 
   def media_only_scope
-    Status.joins(:media_attachments).group(:id)
+    @status = Status.joins(:media_attachments).group(:id)
   end
 
   def language_scope
-    Status.where(language: account.chosen_languages)
+    @status = Status.where(language: account.chosen_languages)
   end
 
   def account_filters_scope
-    Status.not_excluded_by_account(account).tap do |scope|
+    @status = Status.not_excluded_by_account(account).tap do |scope|
       scope.merge!(Status.not_domain_blocked_by_account(account)) unless local_only?
     end
   end
 
   def exclude_direct_statuses_scope
-    Status.where(visibility: %i(public unlisted))
+    @status = Status.where(visibility: %i(public unlisted))
   end
-
-  # def without_unfollowed_accounts_scope
-  #   followed_account_ids = Follow.where(account_id: account.id).pluck(:target_account_id)
-  #   Status.where(account_id: followed_account_ids).merge(Status.local) # Prioritize local statuses from followed accounts
-  # end
 
   def grouped_admin_statuses?
     options[:grouped_admin_statuses] && Status.column_names.include?('local_only')
@@ -123,13 +117,13 @@ class CustomFeeds::ForYouFeed
 
   def grouped_admin_statuses_scope
     grouped_admin_account_ids = fetch_grouped_admin_account_ids
-    Status.where.not(account_id: grouped_admin_account_ids)
+    @status = Status.where.not(account_id: grouped_admin_account_ids)
   end
 
   def grouped_admin_reblogged_statuses_scope
     grouped_admin_account_ids = fetch_grouped_admin_account_ids
     grouped_admin_reblogged_ids = Status.where(account_id: grouped_admin_account_ids).pluck(:reblog_of_id).compact
-    Status.where.not(id: grouped_admin_reblogged_ids)
+    @status = Status.where.not(id: grouped_admin_reblogged_ids)
   end
 
   def fetch_grouped_admin_account_ids
