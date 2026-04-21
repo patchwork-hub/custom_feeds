@@ -4,12 +4,13 @@ class CustomFeeds::ForYouFeed
   include Redisable
   # @param [Account] account
   # @param [Hash] options
-  # @option [Boolean] :with_replies
   # @option [Boolean] :with_reblogs
   # @option [Boolean] :local
   # @option [Boolean] :remote
   # @option [Boolean] :only_media
   # @option [Boolean] :grouped_admin_statuses
+  # @option [Boolean] :exclude_direct_statuses
+  # @option [Boolean] :exclude_replies
   def initialize(account, options = {})
     @account = account
     @options = options
@@ -23,14 +24,16 @@ class CustomFeeds::ForYouFeed
   def get(limit, max_id = nil, since_id = nil, min_id = nil)
     scope = custom_scope
 
-    scope.merge!(without_replies_scope) unless with_replies?
+    scope.merge!(without_unfollowed_accounts_scope)
+    scope.merge!(without_replies_scope) if exclude_replies?
     scope.merge!(without_reblogs_scope) unless with_reblogs?
     scope.merge!(local_only_scope) if local_only?
     scope.merge!(remote_only_scope) if remote_only?
     scope.merge!(account_filters_scope) if account?
     scope.merge!(media_only_scope) if media_only?
-    # scope.merge!(grouped_admin_statuses_scope) if grouped_admin_statuses?
-    # scope.merge!(grouped_admin_reblogged_statuses_scope) if grouped_admin_statuses?
+    scope.merge!(media_only_scope) if media_only?
+    scope.merge!(exclude_direct_statuses_scope) if exclude_direct_statuses?
+    scope.merge!(grouped_admin_reblogged_statuses_scope) if grouped_admin_statuses?
     scope.merge!(language_scope) if account&.chosen_languages.present?
 
     scope.to_a_paginated_by_id(limit, max_id: max_id, since_id: since_id, min_id: min_id)
@@ -44,8 +47,8 @@ class CustomFeeds::ForYouFeed
     options[:with_reblogs]
   end
 
-  def with_replies?
-    options[:with_replies]
+  def exclude_replies?
+    options[:exclude_replies]
   end
 
   def local_only?
@@ -62,6 +65,10 @@ class CustomFeeds::ForYouFeed
 
   def media_only?
     options[:only_media]
+  end
+
+  def exclude_direct_statuses?
+    options[:exclude_direct_statuses]
   end
 
   def custom_scope
@@ -99,6 +106,15 @@ class CustomFeeds::ForYouFeed
     Status.not_excluded_by_account(account).tap do |scope|
       scope.merge!(Status.not_domain_blocked_by_account(account)) unless local_only?
     end
+  end
+
+  def exclude_direct_statuses_scope
+    Status.where(visibility: %i(public unlisted))
+  end
+
+  def without_unfollowed_accounts_scope
+    followed_account_ids = Follow.where(account_id: account.id).pluck(:target_account_id)
+    Status.where(account_id: followed_account_ids).merge(Status.local) # Prioritize local statuses from followed accounts
   end
 
   def grouped_admin_statuses?

@@ -3,7 +3,7 @@ module CustomFeeds::Api::V1::Timelines
     before_action -> { doorkeeper_authorize! :read, :'read:statuses' }
     before_action :require_user!
 
-    PERMITTED_PARAMS = %i(local remote limit only_media grouped_admin_statuses).freeze
+    PERMITTED_PARAMS = %i(local remote limit only_media grouped_admin_statuses exclude_direct_statuses exclude_replies).freeze
 
     def show
       cache_if_unauthenticated!
@@ -36,7 +36,9 @@ module CustomFeeds::Api::V1::Timelines
         local: truthy_param?(:local),
         remote: truthy_param?(:remote),
         only_media: truthy_param?(:only_media),
-        # grouped_admin_statuses: truthy_param?(:grouped_admin_statuses)
+        grouped_admin_statuses: truthy_param?(:grouped_admin_statuses),
+        exclude_direct_statuses: truthy_param?(:exclude_direct_statuses),
+        exclude_replies: truthy_param?(:exclude_replies)
       )
     end
 
