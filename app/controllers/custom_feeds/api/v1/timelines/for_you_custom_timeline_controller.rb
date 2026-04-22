@@ -33,9 +33,6 @@ module CustomFeeds::Api::V1::Timelines
     def foryou_feed
       CustomFeeds::ForYouFeed.new(
         current_account,
-        # local: truthy_param?(:local),
-        # remote: truthy_param?(:remote),
-        # only_media: truthy_param?(:only_media),
         grouped_admin_statuses: truthy_param?(:grouped_admin_statuses),
         exclude_direct_statuses: truthy_param?(:exclude_direct_statuses),
         exclude_replies: truthy_param?(:exclude_replies)
