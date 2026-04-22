@@ -30,10 +30,22 @@ class CustomFeeds::ForYouFeed
     # @status.merge!(remote_only_scope) if remote_only?
     # @status.merge!(account_filters_scope) if account?
     # @status.merge!(media_only_scope) if media_only?
-    # @status.merge!(media_only_scope) if media_only?
     # @status.merge!(exclude_direct_statuses_scope) if exclude_direct_statuses?
     # @status.merge!(grouped_admin_reblogged_statuses_scope) if grouped_admin_statuses?
     # @status.merge!(language_scope) if account&.chosen_languages.present?
+
+    if exclude_replies?
+      without_replies_scope
+    end
+
+    if exclude_direct_statuses?
+      exclude_direct_statuses_scope
+    end
+
+    if grouped_admin_statuses?
+      grouped_admin_statuses_scope
+      grouped_admin_reblogged_statuses_scope
+    end
 
     @status.to_a_paginated_by_id(limit, max_id: max_id, since_id: since_id, min_id: min_id)
   end
@@ -42,29 +54,29 @@ class CustomFeeds::ForYouFeed
 
   attr_reader :account, :options
 
-  def with_reblogs?
-    options[:with_reblogs]
-  end
+  # def with_reblogs?
+  #   options[:with_reblogs]
+  # end
 
   def exclude_replies?
     options[:exclude_replies]
   end
 
-  def local_only?
-    options[:local] && !options[:remote]
-  end
+  # def local_only?
+  #   options[:local] && !options[:remote]
+  # end
 
-  def remote_only?
-    options[:remote] && !options[:local]
-  end
+  # def remote_only?
+  #   options[:remote] && !options[:local]
+  # end
 
   def account?
     account.present?
   end
 
-  def media_only?
-    options[:only_media]
-  end
+  # def media_only?
+  #   options[:only_media]
+  # end
 
   def exclude_direct_statuses?
     options[:exclude_direct_statuses]
@@ -77,38 +89,38 @@ class CustomFeeds::ForYouFeed
     @status = Status.where(id: merged_status_ids).joins(:account).merge(Account.without_suspended.without_silenced)
   end
 
-  def local_only_scope
-    @status = Status.local
-  end
+  # def local_only_scope
+  #   @status = Status.local
+  # end
 
-  def remote_only_scope
-    @status = Status.remote
-  end
+  # def remote_only_scope
+  #   @status = Status.remote
+  # end
 
   def without_replies_scope
-    @status = Status.without_replies
+    @status = @status.without_replies
   end
 
-  def without_reblogs_scope
-    @status = Status.without_reblogs
-  end
+  # def without_reblogs_scope
+  #   @status = @status.without_reblogs
+  # end
 
-  def media_only_scope
-    @status = Status.joins(:media_attachments).group(:id)
-  end
+  # def media_only_scope
+  #   @status = @status.joins(:media_attachments).group(:id)
+  # end
 
-  def language_scope
-    @status = Status.where(language: account.chosen_languages)
-  end
+  # def language_scope
+  #   @status = Status.where(language: account.chosen_languages)
+  # end
 
-  def account_filters_scope
-    @status = Status.not_excluded_by_account(account).tap do |scope|
-      scope.merge!(Status.not_domain_blocked_by_account(account)) unless local_only?
-    end
-  end
+  # def account_filters_scope
+  #   @status = Status.not_excluded_by_account(account).tap do |scope|
+  #     scope.merge!(Status.not_domain_blocked_by_account(account)) unless local_only?
+  #   end
+  # end
 
   def exclude_direct_statuses_scope
-    @status = Status.where(visibility: %i(public unlisted))
+    @status = @status.where(visibility: %i(public unlisted))
   end
 
   def grouped_admin_statuses?
@@ -117,13 +129,13 @@ class CustomFeeds::ForYouFeed
 
   def grouped_admin_statuses_scope
     grouped_admin_account_ids = fetch_grouped_admin_account_ids
-    @status = Status.where.not(account_id: grouped_admin_account_ids)
+    @status = @status.where.not(account_id: grouped_admin_account_ids)
   end
 
   def grouped_admin_reblogged_statuses_scope
     grouped_admin_account_ids = fetch_grouped_admin_account_ids
     grouped_admin_reblogged_ids = Status.where(account_id: grouped_admin_account_ids).pluck(:reblog_of_id).compact
-    @status = Status.where.not(id: grouped_admin_reblogged_ids)
+    @status = @status.where.not(id: grouped_admin_reblogged_ids)
   end
 
   def fetch_grouped_admin_account_ids
