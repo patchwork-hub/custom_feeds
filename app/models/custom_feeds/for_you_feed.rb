@@ -22,20 +22,20 @@ class CustomFeeds::ForYouFeed
   # @param [Integer] min_id
   # @return [Array<Status>]
   def get(limit, max_id = nil, since_id = nil, min_id = nil)
-    scope = custom_scope
+    @status = custom_scope
 
-    scope.merge!(without_replies_scope) if exclude_replies?
-    scope.merge!(without_reblogs_scope) unless with_reblogs?
-    scope.merge!(local_only_scope) if local_only?
-    scope.merge!(remote_only_scope) if remote_only?
-    scope.merge!(account_filters_scope) if account?
-    scope.merge!(media_only_scope) if media_only?
-    scope.merge!(media_only_scope) if media_only?
-    scope.merge!(exclude_direct_statuses_scope) if exclude_direct_statuses?
-    scope.merge!(grouped_admin_reblogged_statuses_scope) if grouped_admin_statuses?
-    scope.merge!(language_scope) if account&.chosen_languages.present?
+    @status.merge!(without_replies_scope) if exclude_replies?
+    @status.merge!(without_reblogs_scope) unless with_reblogs?
+    @status.merge!(local_only_scope) if local_only?
+    @status.merge!(remote_only_scope) if remote_only?
+    @status.merge!(account_filters_scope) if account?
+    @status.merge!(media_only_scope) if media_only?
+    @status.merge!(media_only_scope) if media_only?
+    @status.merge!(exclude_direct_statuses_scope) if exclude_direct_statuses?
+    @status.merge!(grouped_admin_reblogged_statuses_scope) if grouped_admin_statuses?
+    @status.merge!(language_scope) if account&.chosen_languages.present?
 
-    scope.to_a_paginated_by_id(limit, max_id: max_id, since_id: since_id, min_id: min_id)
+    @status.to_a_paginated_by_id(limit, max_id: max_id, since_id: since_id, min_id: min_id)
   end
 
   private
