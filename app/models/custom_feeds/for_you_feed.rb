@@ -63,7 +63,7 @@ class CustomFeeds::ForYouFeed
   end
 
   def without_replies_scope
-    @status = @status.without_replies
+    @status = @status.merge(Status.not_reply)
   end
 
   def without_reblogs_scope
