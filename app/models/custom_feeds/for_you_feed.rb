@@ -60,6 +60,8 @@ class CustomFeeds::ForYouFeed
     mix_status_ids = redis.zrange("feed:mix_channel_local_timeline", 0, -1)
     merged_status_ids = home_status_ids + mix_status_ids
     @status = Status.where(id: merged_status_ids).joins(:account).merge(Account.without_suspended.without_silenced)
+    @status = @status.not_excluded_by_account(account).not_domain_blocked_by_account(account) if account?
+    @status
   end
 
   def without_replies_scope
